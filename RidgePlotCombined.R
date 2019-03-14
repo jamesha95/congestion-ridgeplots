@@ -8,7 +8,6 @@ library(ggridges)
 
 RidgePlot <- function(city_abbrev,              # Melb or Syd
                       x_lim = 100,              # The longest distance we want to plot
-                      export_format = "normal", # Relevant for using grattan_save
                       roof_raise = 0.15,        # Adjusts padding in the plot to avoid cutting off the top ridge
                       wide_break = 20,          # The major x axis breaks
                       narrow_break = 10,        # The minor x axis breaks
@@ -209,9 +208,10 @@ RidgePlot <- function(city_abbrev,              # Melb or Syd
   
   # Save the output. This is the end of the function.
 
-  grattan_save(filename = paste0("Ridgeplots/", export_format, "/", city, if_else(cbd, " CBD", " "), "Ridge.png"), 
-               type = export_format)
-  
+  grattan_save(filename = paste0("Ridgeplots/", "normal", "/", city, if_else(cbd, "CBD", ""), "Ridge.png"), 
+               type = "normal")
+  grattan_save(filename = paste0("Ridgeplots/", "fullslide", "/", city, if_else(cbd, "CBD", ""), "Ridge.png"), 
+               type = "fullslide")
 }
 
 #----- Running the function and generating charts -----  
@@ -227,7 +227,6 @@ for(j in c(TRUE, FALSE)){
   for(i in c("Melb", "Syd")){
     RidgePlot(city_abbrev = i,           # Melb or Syd
               x_lim = 60,                # The longest distance we want to plot
-              export_format = "fullslide",  # Relevant for using grattan_save
               roof_raise = 0.15,         # Adjusts padding in the plot to avoid cutting off the top ridge
               wide_break = 10,           # The major x axis breaks
               narrow_break = 10,         # The minor x axis breaks
