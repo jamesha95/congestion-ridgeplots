@@ -5,18 +5,19 @@ library(ggplot2)
 library(grattanCharts)
 library(grattantheme)
 library(ggridges)
-# Here, VH means Variable Height (i.e. height is proportional to sample size)
-RidgePlotVH <- function(city_abbrev,              # Melb or Syd
-                      x_lim = 100,              # The longest distance we want to plot
-                      roof_raise = 0.15,        # Adjusts padding in the plot to avoid cutting off the top ridge
-                      wide_break = 20,          # The major x axis breaks
-                      narrow_break = 10,        # The minor x axis breaks
-                      overlap = 1,              # The extent to which the ridges overlap (1 = just touching)
-                      cbd = FALSE,              # Drivers who work in the CBD, or all drivers who live in the city?
-                      gridlines = TRUE,         # Adds vertical gridlines
-                      dual_x_axis = FALSE,      # Adds another x axis at the top for ease of reading without gridlines
-                      plot_only = FALSE,
-                      transparency = 1){       # Plots using the last run simulation; time-saving when adjusting aesthetics only
+
+RidgePlotJitter <- function(city_abbrev,              # Melb or Syd
+                         x_lim = 100,              # The longest distance we want to plot
+                         roof_raise = 0.15,        # Adjusts padding in the plot to avoid cutting off the top ridge
+                         wide_break = 20,          # The major x axis breaks
+                         narrow_break = 10,        # The minor x axis breaks
+                         pt_alpa = 0.01,
+                         pt_size = 0.01,
+                         cbd = FALSE,              # Drivers who work in the CBD, or all drivers who live in the city?
+                         gridlines = TRUE,         # Adds vertical gridlines
+                         dual_x_axis = FALSE,      # Adds another x axis at the top for ease of reading without gridlines
+                         plot_only = FALSE,
+                         transparency = 1){       # Plots using the last run simulation; time-saving when adjusting aesthetics only
   
   city <- city_abbrev
   
@@ -83,7 +84,6 @@ RidgePlotVH <- function(city_abbrev,              # Melb or Syd
     totals <- all_obs %>% # this is to get the number of drivers in each income bracket
       group_by(inc) %>%
       summarise(total = n()) %>%
-      mutate(total_scaled = total/overlap) %>% # this just divides all of the totals by a common factor, which is helpful come plotting time
       mutate(frac = total/sum(total)) 
     
     # Now we need to sort our data into the right order
@@ -115,7 +115,7 @@ RidgePlotVH <- function(city_abbrev,              # Melb or Syd
     totals <- inner_join(brackets, totals, by = "inc")
     totals <- totals %>%
       group_by(inc_agg) %>%
-      mutate(frac.agg = sum(frac), total.agg = sum(total), total.agg_scaled = sum(total_scaled)) %>%
+      mutate(frac.agg = sum(frac)) %>%
       ungroup() # we need to get proportions for the aggregated groups too
     
     # we want to know the number of observations in the income brackets too
@@ -149,20 +149,25 @@ RidgePlotVH <- function(city_abbrev,              # Melb or Syd
   
   max_x = x_lim # what's our cut-off distance
   
-  ggplot(all_obs, aes(x = dist, y = inc_agg, group = inc_agg, height = ..density..)) +
+  ggplot(all_obs, aes(x = dist, y = inc_agg)) +
     
-    geom_ridgeline(col = gpal(1),
-                        stat = "density", 
-                        fill = rgb(248, 168, 102, maxColorValue = 255), #faded version of standard orange
-                        #scale = overlap,
-                        aes(scale = total.agg_scaled), # make this larger for overlapping ridges, e.g. 1.5
-                        min_height = 0.0) + #kills the density when it's too low, like a japanese painting
-    
-    theme_grattan() +
+    geom_density_ridges(col = gpal(1),
+                        fill = gpal(1),
+                        alpha = 0,
+                        aes(scale = rel.weight.agg, alpha = transparency), # make this larger for overlapping ridges, e.g. 1.5
+                        rel_min_height = 0.01,  #kills the density when it's too low, like a japanese painting
+                        jittered_points = TRUE,
+                        position = "points_sina",
+                        point_alpha = pt_alpha,
+                        point_size = pt_size,
+                        color = gpal(3),
+                        quantile_lines = TRUE) +
+   
+     theme_grattan() +
     
     theme(axis.text.y = element_text(vjust = 0)) +
-          {if(gridlines) theme(panel.grid.minor.x = element_line(colour = grattan_gridlinegrey), # toggle x gridlines
-                               panel.grid.major.x = element_line(colour = grattan_gridlinegrey))} +
+    {if(gridlines) theme(panel.grid.minor.x = element_line(colour = grattan_gridlinegrey), # toggle x gridlines
+                         panel.grid.major.x = element_line(colour = grattan_gridlinegrey))} +
     
     scale_x_continuous(limits = c(0, max_x), # sets the domain
                        breaks = seq(0, max_x, wide_break), #sets the major x axis 
@@ -206,11 +211,11 @@ RidgePlotVH <- function(city_abbrev,              # Melb or Syd
                           "% of all drivers."))
   
   # Save the output. This is the end of the function.
-  grattan_save(filename = paste0("Ridgeplots/", "fullslide", "/new-", city, if_else(cbd, "CBD", ""), "Ridge.png"), 
+  grattan_save(filename = paste0("Ridgeplots/", "fullslide", "/Jitter", city, if_else(cbd, "CBD", ""), "Ridge.png"), 
                type = "fullslide")
-  grattan_save(filename = paste0("Ridgeplots/", "normal", "/new-", city, if_else(cbd, "CBD", ""), "Ridge.png"), 
+  grattan_save(filename = paste0("Ridgeplots/", "normal", "/Jitter", city, if_else(cbd, "CBD", ""), "Ridge.png"), 
                type = "normal")
-
+  
 }
 
 #----- Running the function and generating charts -----  
@@ -224,18 +229,15 @@ RidgePlotVH <- function(city_abbrev,              # Melb or Syd
 
 for(j in c(TRUE, FALSE)){
   for(i in c("Melb", "Syd")){
-    RidgePlotVH(city_abbrev = i,           # Melb or Syd
-              x_lim = 60,                # The longest distance we want to plot
-              roof_raise = 0.15,         # Adjusts padding in the plot to avoid cutting off the top ridge
-              wide_break = 10,           # The major x axis breaks
-              narrow_break = 10,         # The minor x axis breaks
-              overlap = 1,               # The extent to which the ridges overlap (1 = just touching)
-              cbd = j,                   # Drivers who work in the CBD, or all drivers who live in the city?
-              gridlines = FALSE,          # Adds vertical gridlines
-              dual_x_axis = TRUE,       # Adds another x axis at the top for ease of reading without gridlines
-              plot_only = FALSE)         # Plots using the last run simulation; time-saving when adjusting aesthetics only
+    RidgePlotJitter(city_abbrev = i,           # Melb or Syd
+                 x_lim = 60,                # The longest distance we want to plot
+                 roof_raise = 0.15,         # Adjusts padding in the plot to avoid cutting off the top ridge
+                 wide_break = 10,           # The major x axis breaks
+                 narrow_break = 10,         # The minor x axis breaks
+                 overlap = 1,               # The extent to which the ridges overlap (1 = just touching)
+                 cbd = j,                   # Drivers who work in the CBD, or all drivers who live in the city?
+                 gridlines = FALSE,          # Adds vertical gridlines
+                 dual_x_axis = TRUE,       # Adds another x axis at the top for ease of reading without gridlines
+                 plot_only = FALSE)         # Plots using the last run simulation; time-saving when adjusting aesthetics only
   }
 }
-
-
-
