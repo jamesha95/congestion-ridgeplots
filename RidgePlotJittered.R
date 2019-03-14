@@ -11,13 +11,13 @@ RidgePlotJitter <- function(city_abbrev,              # Melb or Syd
                          roof_raise = 0.15,        # Adjusts padding in the plot to avoid cutting off the top ridge
                          wide_break = 20,          # The major x axis breaks
                          narrow_break = 10,        # The minor x axis breaks
-                         pt_alpa = 0.01,
+                         pt_alpha = 0.01,
                          pt_size = 0.01,
+                         overlap = 1,
                          cbd = FALSE,              # Drivers who work in the CBD, or all drivers who live in the city?
                          gridlines = TRUE,         # Adds vertical gridlines
                          dual_x_axis = FALSE,      # Adds another x axis at the top for ease of reading without gridlines
-                         plot_only = FALSE,
-                         transparency = 1){       # Plots using the last run simulation; time-saving when adjusting aesthetics only
+                         plot_only = FALSE){       # Plots using the last run simulation; time-saving when adjusting aesthetics only
   
   city <- city_abbrev
   
@@ -154,7 +154,7 @@ RidgePlotJitter <- function(city_abbrev,              # Melb or Syd
     geom_density_ridges(col = gpal(1),
                         fill = gpal(1),
                         alpha = 0,
-                        aes(scale = rel.weight.agg, alpha = transparency), # make this larger for overlapping ridges, e.g. 1.5
+                        aes(scale = rel.weight.agg), # make this larger for overlapping ridges, e.g. 1.5
                         rel_min_height = 0.01,  #kills the density when it's too low, like a japanese painting
                         jittered_points = TRUE,
                         position = "points_sina",
@@ -163,7 +163,7 @@ RidgePlotJitter <- function(city_abbrev,              # Melb or Syd
                         color = gpal(3),
                         quantile_lines = TRUE) +
    
-     theme_grattan() +
+    theme_grattan() +
     
     theme(axis.text.y = element_text(vjust = 0)) +
     {if(gridlines) theme(panel.grid.minor.x = element_line(colour = grattan_gridlinegrey), # toggle x gridlines
@@ -230,7 +230,7 @@ RidgePlotJitter <- function(city_abbrev,              # Melb or Syd
 for(j in c(TRUE, FALSE)){
   for(i in c("Melb", "Syd")){
     RidgePlotJitter(city_abbrev = i,           # Melb or Syd
-                 x_lim = 60,                # The longest distance we want to plot
+                 x_lim = 50,                # The longest distance we want to plot
                  roof_raise = 0.15,         # Adjusts padding in the plot to avoid cutting off the top ridge
                  wide_break = 10,           # The major x axis breaks
                  narrow_break = 10,         # The minor x axis breaks
