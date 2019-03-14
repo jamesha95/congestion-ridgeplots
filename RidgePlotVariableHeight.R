@@ -11,7 +11,7 @@ RidgePlotVH <- function(city_abbrev,              # Melb or Syd
                       roof_raise = 0.15,        # Adjusts padding in the plot to avoid cutting off the top ridge
                       wide_break = 20,          # The major x axis breaks
                       narrow_break = 10,        # The minor x axis breaks
-                      overlap = 1,              # The extent to which the ridges overlap (1 = just touching)
+                      overlap = 35,              # The extent to which the ridges overlap (35 seems about right; 20 is no overlap, 50 is a bit much)
                       cbd = FALSE,              # Drivers who work in the CBD, or all drivers who live in the city?
                       gridlines = TRUE,         # Adds vertical gridlines
                       dual_x_axis = FALSE,      # Adds another x axis at the top for ease of reading without gridlines
