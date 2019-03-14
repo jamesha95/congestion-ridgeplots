@@ -15,8 +15,7 @@ RidgePlotVH <- function(city_abbrev,              # Melb or Syd
                       cbd = FALSE,              # Drivers who work in the CBD, or all drivers who live in the city?
                       gridlines = TRUE,         # Adds vertical gridlines
                       dual_x_axis = FALSE,      # Adds another x axis at the top for ease of reading without gridlines
-                      plot_only = FALSE,
-                      transparency = 1){       # Plots using the last run simulation; time-saving when adjusting aesthetics only
+                      plot_only = FALSE){       # Plots using the last run simulation; time-saving when adjusting aesthetics only
   
   city <- city_abbrev
   
@@ -83,7 +82,7 @@ RidgePlotVH <- function(city_abbrev,              # Melb or Syd
     totals <- all_obs %>% # this is to get the number of drivers in each income bracket
       group_by(inc) %>%
       summarise(total = n()) %>%
-      mutate(total_scaled = total/overlap) %>% # this just divides all of the totals by a common factor, which is helpful come plotting time
+      mutate(total_scaled = overlap*total/max(total)) %>% # this just divides all of the totals by a common factor, which is helpful come plotting time
       mutate(frac = total/sum(total)) 
     
     # Now we need to sort our data into the right order
@@ -206,9 +205,9 @@ RidgePlotVH <- function(city_abbrev,              # Melb or Syd
                           "% of all drivers."))
   
   # Save the output. This is the end of the function.
-  grattan_save(filename = paste0("Ridgeplots/", "fullslide", "/new-", city, if_else(cbd, "CBD", ""), "Ridge.png"), 
+  grattan_save(filename = paste0("Ridgeplots/", "fullslide", "/VH-", city, if_else(cbd, "CBD", ""), "Ridge.png"), 
                type = "fullslide")
-  grattan_save(filename = paste0("Ridgeplots/", "normal", "/new-", city, if_else(cbd, "CBD", ""), "Ridge.png"), 
+  grattan_save(filename = paste0("Ridgeplots/", "normal", "/VH-", city, if_else(cbd, "CBD", ""), "Ridge.png"), 
                type = "normal")
 
 }
@@ -222,20 +221,23 @@ RidgePlotVH <- function(city_abbrev,              # Melb or Syd
 
 #if using "normal", minor gridlines won't display. So just use all major gridlines and set wide_break to 10
 
+# now to run the function
 for(j in c(TRUE, FALSE)){
   for(i in c("Melb", "Syd")){
     RidgePlotVH(city_abbrev = i,           # Melb or Syd
-              x_lim = 60,                # The longest distance we want to plot
-              roof_raise = 0.15,         # Adjusts padding in the plot to avoid cutting off the top ridge
-              wide_break = 10,           # The major x axis breaks
-              narrow_break = 10,         # The minor x axis breaks
-              overlap = 1,               # The extent to which the ridges overlap (1 = just touching)
-              cbd = j,                   # Drivers who work in the CBD, or all drivers who live in the city?
-              gridlines = FALSE,          # Adds vertical gridlines
-              dual_x_axis = TRUE,       # Adds another x axis at the top for ease of reading without gridlines
-              plot_only = FALSE)         # Plots using the last run simulation; time-saving when adjusting aesthetics only
+                x_lim = 50,                # The longest distance we want to plot
+                roof_raise = 0.15,         # Adjusts padding in the plot to avoid cutting off the top ridge
+                wide_break = 10,           # The major x axis breaks
+                narrow_break = 10,         # The minor x axis breaks
+                overlap = 35,               # The extent to which the ridges overlap 
+                #50 is pretty good for CBD but not whole city (lots of overlap), 
+                #20 is too small for CBD and melb city (no overlap)
+                # 35 is pretty damn good for all of Melb/Syd
+                cbd = FALSE,                   # Drivers who work in the CBD, or all drivers who live in the city?
+                gridlines = FALSE,          # Adds vertical gridlines
+                dual_x_axis = TRUE,       # Adds another x axis at the top for ease of reading without gridlines
+                plot_only = FALSE)         # Plots using the last run simulation; time-saving when adjusting aesthetics only
   }
 }
-
 
 
