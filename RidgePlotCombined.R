@@ -226,14 +226,14 @@ RidgePlot <- function(city_abbrev,              # Melb or Syd
 for(j in c(TRUE, FALSE)){
   for(i in c("Melb", "Syd")){
     RidgePlot(city_abbrev = i,           # Melb or Syd
-              x_lim = 60,                # The longest distance we want to plot
+              x_lim = 50,                # The longest distance we want to plot
               roof_raise = 0.15,         # Adjusts padding in the plot to avoid cutting off the top ridge
               wide_break = 10,           # The major x axis breaks
               narrow_break = 10,         # The minor x axis breaks
               overlap = 1,               # The extent to which the ridges overlap (1 = just touching)
               cbd = j,                   # Drivers who work in the CBD, or all drivers who live in the city?
-              gridlines = FALSE,          # Adds vertical gridlines
-              dual_x_axis = TRUE,       # Adds another x axis at the top for ease of reading without gridlines
+              gridlines = TRUE,          # Adds vertical gridlines
+              dual_x_axis = FALSE,       # Adds another x axis at the top for ease of reading without gridlines
               plot_only = FALSE)         # Plots using the last run simulation; time-saving when adjusting aesthetics only
   }
 }
